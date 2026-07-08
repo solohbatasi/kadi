@@ -37,6 +37,9 @@ Scheduled payment operations:
 - `payments:cleanup-idempotency-keys` daily.
 - `payments:reconciliation-report` daily.
 - `payments:security-check` daily.
+- `operations:check-alerts` every five minutes.
+
+See `docs/DEPLOYMENT.md`, `docs/RUNBOOK.md`, and `docs/BACKUP_RESTORE.md` before launch.
 
 ## M-Pesa Callback URLs
 

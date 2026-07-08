@@ -13,6 +13,7 @@ const nav = [
     ['M-Pesa Callbacks', 'admin.mpesa-callbacks.*'],
     ['Webhook Deliveries', 'admin.webhook-deliveries.*'],
     ['Failed Jobs', 'admin.failed-jobs.*'],
+    ['Pre-Live Check', 'admin.prelive-check.*'],
     ['Audit Logs', 'admin.audit-logs.*'],
 ];
 

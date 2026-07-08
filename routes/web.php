@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\MerchantController as AdminMerchantController;
 use App\Http\Controllers\Admin\MpesaCallbackController as AdminMpesaCallbackController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\PayoutController as AdminPayoutController;
+use App\Http\Controllers\Admin\PreLiveCheckController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SystemHealthController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
@@ -124,6 +125,7 @@ Route::middleware([
         Route::post('webhook-deliveries/{delivery}/retry', [AdminWebhookDeliveryController::class, 'retry'])->name('webhook-deliveries.retry');
         Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
         Route::get('failed-jobs', [FailedJobController::class, 'index'])->name('failed-jobs.index');
+        Route::get('prelive-check', PreLiveCheckController::class)->name('prelive-check.index');
 
         Route::resource('users', UserController::class)->except(['create', 'edit', 'show']);
         Route::post('users/{user}/suspend', [UserController::class, 'suspend'])->name('users.suspend');
