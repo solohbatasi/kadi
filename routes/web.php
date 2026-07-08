@@ -3,10 +3,18 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\MerchantController as AdminMerchantController;
+use App\Http\Controllers\Admin\MpesaCallbackController as AdminMpesaCallbackController;
 use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Admin\PayoutController as AdminPayoutController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SystemHealthController;
+use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\WalletController as AdminWalletController;
+use App\Http\Controllers\Admin\WebhookDeliveryController as AdminWebhookDeliveryController;
 use App\Http\Controllers\Developer\ApiKeyController;
 use App\Http\Controllers\Developer\DeveloperDashboardController;
 use App\Http\Controllers\Developer\DocsController;
@@ -78,7 +86,29 @@ Route::middleware([
         Route::delete('payout-recipients/{recipient}', [PayoutRecipientController::class, 'destroy'])->name('payout-recipients.destroy');
     });
 
-    Route::prefix('admin')->name('admin.')->group(function () {
+    Route::prefix('admin')->middleware('admin')->name('admin.')->group(function () {
+        Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('merchants', [AdminMerchantController::class, 'index'])->name('merchants.index');
+        Route::get('merchants/{merchant}', [AdminMerchantController::class, 'show'])->name('merchants.show');
+        Route::post('merchants/{merchant}/activate', [AdminMerchantController::class, 'activate'])->name('merchants.activate');
+        Route::post('merchants/{merchant}/suspend', [AdminMerchantController::class, 'suspend'])->name('merchants.suspend');
+        Route::post('merchants/{merchant}/enable-live', [AdminMerchantController::class, 'enableLive'])->name('merchants.enable-live');
+        Route::post('merchants/{merchant}/disable-live', [AdminMerchantController::class, 'disableLive'])->name('merchants.disable-live');
+        Route::post('merchants/{merchant}/verify-compliance', [AdminMerchantController::class, 'verifyCompliance'])->name('merchants.verify-compliance');
+        Route::post('merchants/{merchant}/reject-compliance', [AdminMerchantController::class, 'rejectCompliance'])->name('merchants.reject-compliance');
+        Route::get('transactions', [AdminTransactionController::class, 'index'])->name('transactions.index');
+        Route::get('transactions/{transaction}', [AdminTransactionController::class, 'show'])->name('transactions.show');
+        Route::get('wallets', [AdminWalletController::class, 'index'])->name('wallets.index');
+        Route::get('wallets/{wallet}', [AdminWalletController::class, 'show'])->name('wallets.show');
+        Route::get('payouts', [AdminPayoutController::class, 'index'])->name('payouts.index');
+        Route::get('payouts/{payout}', [AdminPayoutController::class, 'show'])->name('payouts.show');
+        Route::get('mpesa-callbacks', [AdminMpesaCallbackController::class, 'index'])->name('mpesa-callbacks.index');
+        Route::get('mpesa-callbacks/{callback}', [AdminMpesaCallbackController::class, 'show'])->name('mpesa-callbacks.show');
+        Route::get('webhook-deliveries', [AdminWebhookDeliveryController::class, 'index'])->name('webhook-deliveries.index');
+        Route::get('webhook-deliveries/{delivery}', [AdminWebhookDeliveryController::class, 'show'])->name('webhook-deliveries.show');
+        Route::post('webhook-deliveries/{delivery}/retry', [AdminWebhookDeliveryController::class, 'retry'])->name('webhook-deliveries.retry');
+        Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+
         Route::resource('users', UserController::class)->except(['create', 'edit', 'show']);
         Route::post('users/{user}/suspend', [UserController::class, 'suspend'])->name('users.suspend');
         Route::post('users/{user}/activate', [UserController::class, 'activate'])->name('users.activate');
