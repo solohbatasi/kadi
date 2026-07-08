@@ -7,6 +7,7 @@ use App\Models\Payout;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Models\WalletLedgerEntry;
+use App\Support\Mask;
 use App\Support\PhoneNumber;
 
 trait SerializesAdminData
@@ -26,6 +27,9 @@ trait SerializesAdminData
             'status' => $merchant->status,
             'compliance_status' => $merchant->compliance_status,
             'live_enabled' => $merchant->live_enabled,
+            'live_requested_at' => $merchant->live_requested_at,
+            'live_reviewed_at' => $merchant->live_reviewed_at,
+            'live_rejection_reason' => $merchant->live_rejection_reason,
         ];
     }
 
@@ -48,7 +52,7 @@ trait SerializesAdminData
             'mpesa_receipt_number' => $transaction->mpesa_receipt_number,
             'mpesa_checkout_request_id' => $transaction->mpesa_checkout_request_id,
             'mpesa_merchant_request_id' => $transaction->mpesa_merchant_request_id,
-            'metadata' => $transaction->metadata ?? [],
+            'metadata' => Mask::arraySensitive($transaction->metadata ?? []),
             'created_at' => $transaction->created_at,
             'paid_at' => $transaction->paid_at,
             'failed_at' => $transaction->failed_at,
@@ -79,7 +83,7 @@ trait SerializesAdminData
             'balance_after' => $entry->balance_after,
             'description' => $entry->description,
             'transaction_public_id' => $entry->transaction?->public_id,
-            'metadata' => $entry->metadata ?? [],
+            'metadata' => Mask::arraySensitive($entry->metadata ?? []),
             'created_at' => $entry->created_at,
         ];
     }
@@ -109,7 +113,7 @@ trait SerializesAdminData
             'provider_result_code' => $payout->provider_result_code,
             'provider_result_description' => $payout->provider_result_description,
             'failure_reason' => $payout->failure_reason,
-            'metadata' => $payout->metadata ?? [],
+            'metadata' => Mask::arraySensitive($payout->metadata ?? []),
             'created_at' => $payout->created_at,
             'paid_at' => $payout->paid_at,
             'failed_at' => $payout->failed_at,
@@ -117,4 +121,3 @@ trait SerializesAdminData
         ];
     }
 }
-

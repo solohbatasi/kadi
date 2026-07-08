@@ -12,6 +12,7 @@ const nav = [
     ['Payouts', 'admin.payouts.*'],
     ['M-Pesa Callbacks', 'admin.mpesa-callbacks.*'],
     ['Webhook Deliveries', 'admin.webhook-deliveries.*'],
+    ['Failed Jobs', 'admin.failed-jobs.*'],
     ['Audit Logs', 'admin.audit-logs.*'],
 ];
 
@@ -69,4 +70,3 @@ const logout = () => router.post(route('logout'));
         </div>
     </div>
 </template>
-

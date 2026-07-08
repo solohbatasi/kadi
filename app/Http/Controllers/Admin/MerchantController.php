@@ -85,12 +85,41 @@ class MerchantController extends Controller
 
     public function enableLive(Merchant $merchant): RedirectResponse
     {
-        return $this->updateMerchant($merchant, ['live_enabled' => true], 'merchant.live_enabled');
+        return $this->updateMerchant($merchant, [
+            'live_enabled' => true,
+            'live_reviewed_at' => now(),
+            'live_rejection_reason' => null,
+        ], 'merchant.live_enabled');
     }
 
     public function disableLive(Merchant $merchant): RedirectResponse
     {
-        return $this->updateMerchant($merchant, ['live_enabled' => false], 'merchant.live_disabled');
+        return $this->updateMerchant($merchant, [
+            'live_enabled' => false,
+            'live_reviewed_at' => now(),
+        ], 'merchant.live_disabled');
+    }
+
+    public function approveLive(Merchant $merchant): RedirectResponse
+    {
+        return $this->updateMerchant($merchant, [
+            'live_enabled' => true,
+            'live_reviewed_at' => now(),
+            'live_rejection_reason' => null,
+        ], 'merchant.live_approved');
+    }
+
+    public function rejectLive(Request $request, Merchant $merchant): RedirectResponse
+    {
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'max:1000'],
+        ]);
+
+        return $this->updateMerchant($merchant, [
+            'live_enabled' => false,
+            'live_reviewed_at' => now(),
+            'live_rejection_reason' => $validated['reason'],
+        ], 'merchant.live_rejected');
     }
 
     public function verifyCompliance(Merchant $merchant): RedirectResponse
@@ -129,4 +158,3 @@ class MerchantController extends Controller
         ]);
     }
 }
-

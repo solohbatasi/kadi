@@ -4,6 +4,10 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 
 const props = defineProps({ merchant: Object, recentTransactions: Array, recentPayouts: Array });
 const post = (action) => router.post(route(`admin.merchants.${action}`, props.merchant.id), {}, { preserveScroll: true });
+const rejectLive = () => {
+    const reason = prompt('Reason for rejecting live mode?');
+    if (reason) router.post(route('admin.merchants.reject-live', props.merchant.id), { reason }, { preserveScroll: true });
+};
 </script>
 
 <template>
@@ -21,6 +25,8 @@ const post = (action) => router.post(route(`admin.merchants.${action}`, props.me
                         <button class="rounded-md border px-3 py-2 text-sm" @click="post('suspend')">Suspend</button>
                         <button class="rounded-md border px-3 py-2 text-sm" @click="post('enable-live')">Enable live</button>
                         <button class="rounded-md border px-3 py-2 text-sm" @click="post('disable-live')">Disable live</button>
+                        <button class="rounded-md border px-3 py-2 text-sm" @click="post('approve-live')">Approve live</button>
+                        <button class="rounded-md border px-3 py-2 text-sm" @click="rejectLive">Reject live</button>
                         <button class="rounded-md border px-3 py-2 text-sm" @click="post('verify-compliance')">Verify compliance</button>
                         <button class="rounded-md border px-3 py-2 text-sm" @click="post('reject-compliance')">Reject compliance</button>
                     </div>
@@ -35,4 +41,3 @@ const post = (action) => router.post(route(`admin.merchants.${action}`, props.me
         </div>
     </AdminLayout>
 </template>
-

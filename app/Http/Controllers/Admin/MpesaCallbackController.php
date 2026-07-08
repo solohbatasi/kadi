@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\MpesaCallback;
-use App\Support\PhoneNumber;
+use App\Support\Mask;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -62,13 +62,6 @@ class MpesaCallbackController extends Controller
 
     protected function sanitizePayload(array $payload): array
     {
-        array_walk_recursive($payload, function (&$value, $key): void {
-            if (is_string($value) && str_contains(strtolower((string) $key), 'phone')) {
-                $value = PhoneNumber::mask($value);
-            }
-        });
-
-        return $payload;
+        return Mask::arraySensitive($payload);
     }
 }
-

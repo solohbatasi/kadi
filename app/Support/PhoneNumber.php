@@ -30,16 +30,6 @@ class PhoneNumber
 
     public static function mask(?string $value): ?string
     {
-        if ($value === null || $value === '') {
-            return $value;
-        }
-
-        $digits = self::sanitize($value);
-
-        if (strlen($digits) <= 6) {
-            return str_repeat('*', strlen($digits));
-        }
-
-        return substr($digits, 0, 4).'****'.substr($digits, -3);
+        return Mask::phone($value);
     }
 }

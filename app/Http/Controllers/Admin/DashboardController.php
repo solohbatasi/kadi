@@ -30,10 +30,13 @@ class DashboardController extends Controller
                 'pending_payouts' => Payout::whereIn('status', ['pending', 'processing'])->count(),
                 'failed_payouts' => Payout::where('status', 'failed')->count(),
                 'failed_webhook_deliveries' => MerchantWebhookDelivery::where('status', 'failed')->count(),
+                'stale_pending_transactions' => Transaction::where('status', 'pending')
+                    ->where('created_at', '<=', now()->subMinutes(config('payments.pending_transaction_timeout_minutes', 15)))
+                    ->count(),
+                'timeout_transactions' => Transaction::where('status', 'timeout')->count(),
             ],
             'recentTransactions' => Transaction::with('merchant')->latest()->limit(8)->get()->map(fn ($transaction) => $this->transactionSummary($transaction)),
             'recentPayouts' => Payout::with(['merchant', 'recipient', 'transaction'])->latest()->limit(8)->get()->map(fn ($payout) => $this->payoutSummary($payout)),
         ]);
     }
 }
-

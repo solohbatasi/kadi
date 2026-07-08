@@ -10,6 +10,7 @@ use App\Models\PayoutRecipient;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Support\Money;
+use App\Support\Mask;
 use App\Support\PhoneNumber;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -204,7 +205,14 @@ class PayoutService
             throw new InvalidArgumentException('Merchant account is not active.');
         }
 
-        if ($merchant->compliance_status !== 'verified'
+        $production = config('mpesa.environment') === 'production';
+
+        if ($production && $merchant->compliance_status !== 'verified') {
+            throw new InvalidArgumentException('Verified compliance is required for live payouts.');
+        }
+
+        if (! $production
+            && $merchant->compliance_status !== 'verified'
             && ! config('payments.allow_sandbox_payouts_without_verified_compliance', true)) {
             throw new InvalidArgumentException('Verified compliance is required for payouts.');
         }
@@ -217,7 +225,7 @@ class PayoutService
             'provider_originator_conversation_id' => $providerData['originator_conversation_id'] ?? $providerData['OriginatorConversationID'] ?? null,
             'provider_result_code' => isset($providerData['result_code']) ? (string) $providerData['result_code'] : ($providerData['ResultCode'] ?? null),
             'provider_result_description' => $providerData['result_description'] ?? $providerData['ResultDesc'] ?? null,
-            'metadata' => array_merge($providerData['metadata'] ?? [], ['provider_payload' => $providerData]),
+            'metadata' => Mask::arraySensitive(array_merge($providerData['metadata'] ?? [], ['provider_payload' => $providerData])),
         ], fn ($value) => $value !== null && $value !== []);
     }
 

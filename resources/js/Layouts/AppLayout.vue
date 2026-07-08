@@ -19,6 +19,7 @@ const sidebarOpen = ref(localStorage.getItem('sidebar') !== 'closed');
 
 const navigation = computed(() => [
     { name: 'Dashboard', route: 'developer.dashboard', href: route('developer.dashboard'), icon: 'dashboard' },
+    { name: 'Onboarding', route: 'developer.onboarding.*', href: route('developer.onboarding.index'), icon: 'activity' },
     { name: 'API Keys', route: 'developer.api-keys.*', href: route('developer.api-keys.index'), icon: 'key' },
     { name: 'Wallet', route: 'developer.wallet.*', href: route('developer.wallet.overview'), icon: 'wallet' },
     { name: 'Transactions', route: 'developer.transactions.*', href: route('developer.transactions.index'), icon: 'transactions' },

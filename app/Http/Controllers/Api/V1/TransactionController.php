@@ -9,6 +9,7 @@ use App\Services\Mpesa\StkPushService;
 use App\Services\Payments\CommissionService;
 use App\Services\Payments\MerchantWebhookService;
 use App\Services\Payments\TransactionService;
+use App\Support\Mask;
 use App\Support\PhoneNumber;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -138,7 +139,7 @@ class TransactionController extends Controller
             'mpesa_receipt' => $transaction->mpesa_receipt_number,
             'result_code' => $transaction->mpesa_result_code,
             'result_description' => $transaction->mpesa_result_description,
-            'metadata' => $transaction->metadata ?? [],
+            'metadata' => Mask::arraySensitive($transaction->metadata ?? []),
             'paid_at' => $transaction->paid_at,
             'failed_at' => $transaction->failed_at,
             'created_at' => $transaction->created_at,

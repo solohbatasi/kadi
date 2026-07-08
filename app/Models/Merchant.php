@@ -25,10 +25,15 @@ class Merchant extends Model
         'status',
         'compliance_status',
         'live_enabled',
+        'live_requested_at',
+        'live_reviewed_at',
+        'live_rejection_reason',
     ];
 
     protected $casts = [
         'live_enabled' => 'boolean',
+        'live_requested_at' => 'datetime',
+        'live_reviewed_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

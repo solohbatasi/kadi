@@ -19,6 +19,8 @@ class MerchantProfile extends Model
         'document_number',
         'kra_pin',
         'address',
+        'terms_accepted_at',
+        'privacy_accepted_at',
         'notification_email_enabled',
         'notification_sms_enabled',
     ];
@@ -26,6 +28,8 @@ class MerchantProfile extends Model
     protected $casts = [
         'document_number' => 'encrypted',
         'kra_pin' => 'encrypted',
+        'terms_accepted_at' => 'datetime',
+        'privacy_accepted_at' => 'datetime',
         'notification_email_enabled' => 'boolean',
         'notification_sms_enabled' => 'boolean',
     ];

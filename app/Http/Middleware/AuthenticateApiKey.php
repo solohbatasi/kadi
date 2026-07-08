@@ -43,6 +43,10 @@ class AuthenticateApiKey
             return $this->forbidden('Merchant account is not active.');
         }
 
+        if ($key->environment === 'production' && ! $key->merchant->live_enabled) {
+            return $this->forbidden('Production API access requires live mode.');
+        }
+
         $request->attributes->set('apiKey', $key);
         $request->attributes->set('merchant', $key->merchant);
         $request->attributes->set('apiEnvironment', $key->environment);
