@@ -16,6 +16,7 @@ const props = defineProps({
 
 const page = usePage();
 const sidebarOpen = ref(localStorage.getItem('sidebar') !== 'closed');
+const isAdmin = computed(() => page.props.auth?.is_admin === true);
 
 const navigation = computed(() => [
     { name: 'Dashboard', route: 'developer.dashboard', href: route('developer.dashboard'), icon: 'dashboard' },
@@ -28,10 +29,8 @@ const navigation = computed(() => [
     { name: 'Payouts', route: 'developer.payouts.*', href: route('developer.payouts.index'), icon: 'payout' },
     { name: 'Webhooks', route: 'developer.webhooks.*', href: route('developer.webhooks.show'), icon: 'webhook' },
     { name: 'API Docs', route: 'developer.docs.*', href: route('developer.docs.index'), icon: 'docs' },
-    { name: 'Users', route: 'admin.users.*', href: route('admin.users.index'), icon: 'users' },
-    { name: 'Roles', route: 'admin.roles.*', href: route('admin.roles.index'), icon: 'shield' },
-    { name: 'Permissions', route: 'admin.permissions.*', href: route('admin.permissions.index'), icon: 'key' },
-    { name: 'System Health', route: 'admin.system-health', href: route('admin.system-health'), icon: 'activity' },
+    { name: 'Compliance', route: 'developer.compliance.*', href: route('developer.compliance.edit'), icon: 'shield' },
+    isAdmin.value ? { name: 'Admin Dashboard', route: 'admin.dashboard', href: route('admin.dashboard'), icon: 'shield' } : null,
     page.props.jetstream.hasApiFeatures ? { name: 'API Tokens', route: 'api-tokens.index', href: route('api-tokens.index'), icon: 'mobile' } : null,
 ].filter(Boolean));
 
