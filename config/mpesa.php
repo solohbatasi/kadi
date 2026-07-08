@@ -7,5 +7,6 @@ return [
     'shortcode' => env('MPESA_SHORTCODE'),
     'passkey' => env('MPESA_PASSKEY'),
     'callback_url' => env('MPESA_CALLBACK_URL'),
+    'callback_secret' => env('MPESA_CALLBACK_SECRET'),
     'timeout' => env('MPESA_TIMEOUT', 30),
 ];
