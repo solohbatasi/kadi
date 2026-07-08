@@ -7,6 +7,9 @@ use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SystemHealthController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Developer\ApiKeyController;
+use App\Http\Controllers\Developer\DeveloperDashboardController;
+use App\Http\Controllers\Developer\WalletController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -25,6 +28,16 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
+
+    Route::prefix('developer')->middleware(['throttle:60,1'])->name('developer.')->group(function () {
+        Route::get('/', [DeveloperDashboardController::class, 'index'])->name('dashboard');
+        Route::get('api-keys', [ApiKeyController::class, 'index'])->name('api-keys.index');
+        Route::post('api-keys', [ApiKeyController::class, 'store'])->name('api-keys.store');
+        Route::post('api-keys/{apiKey}/revoke', [ApiKeyController::class, 'revoke'])->name('api-keys.revoke');
+        Route::post('api-keys/{apiKey}/rotate', [ApiKeyController::class, 'rotate'])->name('api-keys.rotate');
+        Route::delete('api-keys/{apiKey}', [ApiKeyController::class, 'destroy'])->name('api-keys.destroy');
+        Route::get('wallet', [WalletController::class, 'show'])->name('wallet.overview');
+    });
 
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('users', UserController::class)->except(['create', 'edit', 'show']);

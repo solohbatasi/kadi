@@ -18,7 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\EnsureAccountIsActive::class,
         ]);
 
-        //
+        $middleware->alias([
+            'auth.apikey' => \App\Http\Middleware\AuthenticateApiKey::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
