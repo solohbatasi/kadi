@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PaymentLink extends Model
 {
@@ -30,5 +31,16 @@ class PaymentLink extends Model
     public function merchant(): BelongsTo
     {
         return $this->belongsTo(Merchant::class);
+    }
+
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class, 'merchant_id', 'merchant_id')
+            ->where('metadata->payment_link_public_id', $this->public_id);
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'public_id';
     }
 }

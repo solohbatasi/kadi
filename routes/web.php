@@ -9,8 +9,10 @@ use App\Http\Controllers\Admin\SystemHealthController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Developer\ApiKeyController;
 use App\Http\Controllers\Developer\DeveloperDashboardController;
+use App\Http\Controllers\Developer\PaymentLinkController;
 use App\Http\Controllers\Developer\WebhookEndpointController;
 use App\Http\Controllers\Developer\WalletController;
+use App\Http\Controllers\Public\PaymentLinkPayController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -20,6 +22,9 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+Route::get('/pay/{slug}', [PaymentLinkPayController::class, 'show'])->name('payment-links.pay.show');
+Route::post('/pay/{slug}', [PaymentLinkPayController::class, 'pay'])->name('payment-links.pay.submit');
 
 Route::middleware([
     'auth:sanctum',
@@ -41,6 +46,13 @@ Route::middleware([
         Route::get('webhooks', [WebhookEndpointController::class, 'show'])->name('webhooks.show');
         Route::put('webhooks', [WebhookEndpointController::class, 'update'])->name('webhooks.update');
         Route::post('webhooks/test', [WebhookEndpointController::class, 'test'])->name('webhooks.test');
+        Route::get('payment-links', [PaymentLinkController::class, 'index'])->name('payment-links.index');
+        Route::post('payment-links', [PaymentLinkController::class, 'store'])->name('payment-links.store');
+        Route::get('payment-links/{paymentLink}', [PaymentLinkController::class, 'show'])->name('payment-links.show');
+        Route::put('payment-links/{paymentLink}', [PaymentLinkController::class, 'update'])->name('payment-links.update');
+        Route::post('payment-links/{paymentLink}/activate', [PaymentLinkController::class, 'activate'])->name('payment-links.activate');
+        Route::post('payment-links/{paymentLink}/deactivate', [PaymentLinkController::class, 'deactivate'])->name('payment-links.deactivate');
+        Route::delete('payment-links/{paymentLink}', [PaymentLinkController::class, 'destroy'])->name('payment-links.destroy');
     });
 
     Route::prefix('admin')->name('admin.')->group(function () {

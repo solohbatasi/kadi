@@ -6,19 +6,23 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Developer\CreateApiKeyRequest;
 use App\Models\ApiKey;
 use App\Services\Payments\ApiKeyService;
+use App\Services\Payments\MerchantBootstrapService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ApiKeyController extends Controller
 {
-    public function __construct(protected ApiKeyService $apiKeyService)
+    public function __construct(
+        protected ApiKeyService $apiKeyService,
+        protected MerchantBootstrapService $bootstrapService
+    )
     {
     }
 
     public function index(): Response
     {
-        $merchant = auth()->user()->merchant;
+        $merchant = $this->merchantForUser(auth()->user());
 
         if (! $merchant) {
             abort(404, 'Merchant not found.');
@@ -35,7 +39,7 @@ class ApiKeyController extends Controller
 
     public function store(CreateApiKeyRequest $request): RedirectResponse
     {
-        $merchant = auth()->user()->merchant;
+        $merchant = $this->merchantForUser($request->user());
 
         if (! $merchant) {
             abort(404, 'Merchant not found.');
@@ -75,10 +79,22 @@ class ApiKeyController extends Controller
 
     protected function authorizeKeyOwnership(ApiKey $apiKey): void
     {
-        $merchant = request()->user()->merchant;
+        $merchant = request()->user()->merchant()->first();
 
         if (! $merchant || $apiKey->merchant_id !== $merchant->id) {
             abort(403, 'Unauthorized action.');
         }
+    }
+
+    protected function merchantForUser($user)
+    {
+        $merchant = $user->merchant()->first()
+            ?: $this->bootstrapService->bootstrapForUser($user);
+
+        $this->bootstrapService->ensureProfile($merchant);
+        $this->bootstrapService->ensureWallet($merchant);
+        $this->bootstrapService->ensureWebhookEndpoint($merchant);
+
+        return $merchant;
     }
 }

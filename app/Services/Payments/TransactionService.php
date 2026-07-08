@@ -4,6 +4,7 @@ namespace App\Services\Payments;
 
 use App\Models\Merchant;
 use App\Models\MpesaCallback;
+use App\Models\PaymentLink;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use Illuminate\Support\Facades\DB;
@@ -152,6 +153,53 @@ class TransactionService
         }
 
         return $transaction;
+    }
+
+    public function createPendingPaymentLink(
+        PaymentLink $paymentLink,
+        string $phone,
+        int $amount,
+        int $commissionAmount,
+        int $netAmount,
+        string $idempotencyKey,
+        string $environment
+    ): Transaction {
+        $existing = Transaction::where('merchant_id', $paymentLink->merchant_id)
+            ->where('idempotency_key', $idempotencyKey)
+            ->where('type', 'payment_link')
+            ->first();
+
+        if ($existing) {
+            if ($existing->environment !== $environment) {
+                throw new RuntimeException('Idempotency key already used with different environment.');
+            }
+
+            return $existing;
+        }
+
+        return Transaction::create([
+            'merchant_id' => $paymentLink->merchant_id,
+            'public_id' => 'txn_'.bin2hex(random_bytes(16)),
+            'type' => 'payment_link',
+            'direction' => 'credit',
+            'environment' => $environment,
+            'phone' => $phone,
+            'amount' => $amount,
+            'currency' => $paymentLink->currency,
+            'commission_amount' => $commissionAmount,
+            'provider_fee' => 0,
+            'net_amount' => $netAmount,
+            'status' => 'pending',
+            'reference' => $paymentLink->public_id,
+            'description' => $paymentLink->title,
+            'idempotency_key' => $idempotencyKey,
+            'metadata' => [
+                'initiated_by' => 'payment_link',
+                'payment_link_public_id' => $paymentLink->public_id,
+                'payment_link_slug' => $paymentLink->slug,
+                'payment_link_title' => $paymentLink->title,
+            ],
+        ]);
     }
 
     protected function statusForMpesaResultCode(string $resultCode): string
