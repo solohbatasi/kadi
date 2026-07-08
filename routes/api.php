@@ -15,8 +15,10 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::middleware(['auth.apikey', 'throttle:60,1'])->prefix('v1')->group(function () {
+    Route::get('/transactions', [TransactionController::class, 'index'])->name('api.v1.transactions.index');
     Route::post('/transactions/push-stk', [TransactionController::class, 'initiateStkPush'])
         ->name('api.v1.push-stk');
+    Route::get('/transactions/{public_id}', [TransactionController::class, 'show'])->name('api.v1.transactions.show');
     Route::get('/payment-links', [PaymentLinkController::class, 'index'])->name('api.v1.payment-links.index');
     Route::post('/payment-links', [PaymentLinkController::class, 'store'])->name('api.v1.payment-links.store');
     Route::get('/payment-links/{public_id}', [PaymentLinkController::class, 'show'])->name('api.v1.payment-links.show');

@@ -18,7 +18,15 @@ const page = usePage();
 const sidebarOpen = ref(localStorage.getItem('sidebar') !== 'closed');
 
 const navigation = computed(() => [
-    { name: 'Dashboard', route: 'dashboard', href: route('dashboard'), icon: 'dashboard' },
+    { name: 'Dashboard', route: 'developer.dashboard', href: route('developer.dashboard'), icon: 'dashboard' },
+    { name: 'API Keys', route: 'developer.api-keys.*', href: route('developer.api-keys.index'), icon: 'key' },
+    { name: 'Wallet', route: 'developer.wallet.*', href: route('developer.wallet.overview'), icon: 'wallet' },
+    { name: 'Transactions', route: 'developer.transactions.*', href: route('developer.transactions.index'), icon: 'transactions' },
+    { name: 'Payment Links', route: 'developer.payment-links.*', href: route('developer.payment-links.index'), icon: 'link' },
+    { name: 'Invoices', route: 'developer.invoices.*', href: route('developer.invoices.index'), icon: 'invoice' },
+    { name: 'Payouts', route: 'developer.payouts.*', href: route('developer.payouts.index'), icon: 'payout' },
+    { name: 'Webhooks', route: 'developer.webhooks.*', href: route('developer.webhooks.show'), icon: 'webhook' },
+    { name: 'API Docs', route: 'developer.docs.*', href: route('developer.docs.index'), icon: 'docs' },
     { name: 'Users', route: 'admin.users.*', href: route('admin.users.index'), icon: 'users' },
     { name: 'Roles', route: 'admin.roles.*', href: route('admin.roles.index'), icon: 'shield' },
     { name: 'Permissions', route: 'admin.permissions.*', href: route('admin.permissions.index'), icon: 'key' },
@@ -69,6 +77,13 @@ const logout = () => router.post(route('logout'));
                                 <path v-else-if="item.icon === 'users'" stroke-linecap="round" stroke-linejoin="round" d="M16 19v-1.5A3.5 3.5 0 0 0 12.5 14h-5A3.5 3.5 0 0 0 4 17.5V19m15 0v-1a3 3 0 0 0-2-2.83M13 5.17a3 3 0 0 1 0 5.66M10 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
                                 <path v-else-if="item.icon === 'shield'" stroke-linecap="round" stroke-linejoin="round" d="M12 21s7-3.5 7-10V5l-7-2-7 2v6c0 6.5 7 10 7 10Z" />
                                 <path v-else-if="item.icon === 'key'" stroke-linecap="round" stroke-linejoin="round" d="M15 7a4 4 0 1 1-1.2 2.86L4 19.66V22h3v-2h2v-2h2l2.14-2.14A4 4 0 0 1 15 7Z" />
+                                <path v-else-if="item.icon === 'wallet'" stroke-linecap="round" stroke-linejoin="round" d="M4 7.5A2.5 2.5 0 0 1 6.5 5H19a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H6.5A2.5 2.5 0 0 1 4 17.5v-10Zm0 0A2.5 2.5 0 0 0 6.5 10H20m-4 4h.01" />
+                                <path v-else-if="item.icon === 'transactions'" stroke-linecap="round" stroke-linejoin="round" d="M7 7h13l-3-3m3 3-3 3M17 17H4l3 3m-3-3 3-3" />
+                                <path v-else-if="item.icon === 'link'" stroke-linecap="round" stroke-linejoin="round" d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L10.9 5.03m3.2 5.94a5 5 0 0 0-7.07 0L4.9 13.1a5 5 0 1 0 7.07 7.07l1.22-1.22" />
+                                <path v-else-if="item.icon === 'invoice'" stroke-linecap="round" stroke-linejoin="round" d="M7 3h10a2 2 0 0 1 2 2v16l-3-1.5-3 1.5-3-1.5L7 21V5a2 2 0 0 1 2-2Zm3 6h6M10 13h6M10 17h3" />
+                                <path v-else-if="item.icon === 'payout'" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14" />
+                                <path v-else-if="item.icon === 'webhook'" stroke-linecap="round" stroke-linejoin="round" d="M18 8a3 3 0 1 0-2.83-4H14a4 4 0 0 0-4 4v1m-4 7a3 3 0 1 0 2.83 4H10a4 4 0 0 0 4-4v-1m-8-3h12" />
+                                <path v-else-if="item.icon === 'docs'" stroke-linecap="round" stroke-linejoin="round" d="M6 3h8l4 4v14H6V3Zm8 0v5h5M9 13h6M9 17h6" />
                                 <path v-else-if="item.icon === 'activity'" stroke-linecap="round" stroke-linejoin="round" d="M4 13h4l2-7 4 14 2-7h4" />
                                 <path v-else stroke-linecap="round" stroke-linejoin="round" d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm2 17h2" />
                             </svg>
