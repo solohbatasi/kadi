@@ -63,6 +63,11 @@ class Transaction extends Model
         return $this->hasMany(MpesaCallback::class);
     }
 
+    public function payout(): HasMany
+    {
+        return $this->hasMany(Payout::class);
+    }
+
     public function isSuccessful(): bool
     {
         return $this->status === 'success';

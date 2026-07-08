@@ -7,21 +7,21 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Wallet extends Model
+class PayoutRecipient extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'merchant_id',
         'public_id',
-        'available_balance',
-        'pending_balance',
-        'currency',
+        'name',
+        'phone',
+        'status',
+        'metadata',
     ];
 
     protected $casts = [
-        'available_balance' => 'integer',
-        'pending_balance' => 'integer',
+        'metadata' => 'array',
     ];
 
     public function merchant(): BelongsTo
@@ -29,13 +29,13 @@ class Wallet extends Model
         return $this->belongsTo(Merchant::class);
     }
 
-    public function ledgerEntries(): HasMany
-    {
-        return $this->hasMany(WalletLedgerEntry::class);
-    }
-
     public function payouts(): HasMany
     {
-        return $this->hasMany(Payout::class, 'merchant_id', 'merchant_id');
+        return $this->hasMany(Payout::class);
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'public_id';
     }
 }

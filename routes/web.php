@@ -9,7 +9,10 @@ use App\Http\Controllers\Admin\SystemHealthController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Developer\ApiKeyController;
 use App\Http\Controllers\Developer\DeveloperDashboardController;
+use App\Http\Controllers\Developer\InvoiceController;
 use App\Http\Controllers\Developer\PaymentLinkController;
+use App\Http\Controllers\Developer\PayoutController;
+use App\Http\Controllers\Developer\PayoutRecipientController;
 use App\Http\Controllers\Developer\WebhookEndpointController;
 use App\Http\Controllers\Developer\WalletController;
 use App\Http\Controllers\Public\PaymentLinkPayController;
@@ -53,6 +56,22 @@ Route::middleware([
         Route::post('payment-links/{paymentLink}/activate', [PaymentLinkController::class, 'activate'])->name('payment-links.activate');
         Route::post('payment-links/{paymentLink}/deactivate', [PaymentLinkController::class, 'deactivate'])->name('payment-links.deactivate');
         Route::delete('payment-links/{paymentLink}', [PaymentLinkController::class, 'destroy'])->name('payment-links.destroy');
+        Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+        Route::post('invoices', [InvoiceController::class, 'store'])->name('invoices.store');
+        Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
+        Route::put('invoices/{invoice}', [InvoiceController::class, 'update'])->name('invoices.update');
+        Route::post('invoices/{invoice}/send', [InvoiceController::class, 'send'])->name('invoices.send');
+        Route::post('invoices/{invoice}/mark-paid', [InvoiceController::class, 'markPaid'])->name('invoices.mark-paid');
+        Route::post('invoices/{invoice}/void', [InvoiceController::class, 'void'])->name('invoices.void');
+        Route::delete('invoices/{invoice}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
+        Route::get('payouts', [PayoutController::class, 'index'])->name('payouts.index');
+        Route::post('payouts', [PayoutController::class, 'store'])->name('payouts.store');
+        Route::get('payout-recipients', [PayoutRecipientController::class, 'index'])->name('payout-recipients.index');
+        Route::post('payout-recipients', [PayoutRecipientController::class, 'store'])->name('payout-recipients.store');
+        Route::put('payout-recipients/{recipient}', [PayoutRecipientController::class, 'update'])->name('payout-recipients.update');
+        Route::post('payout-recipients/{recipient}/activate', [PayoutRecipientController::class, 'activate'])->name('payout-recipients.activate');
+        Route::post('payout-recipients/{recipient}/deactivate', [PayoutRecipientController::class, 'deactivate'])->name('payout-recipients.deactivate');
+        Route::delete('payout-recipients/{recipient}', [PayoutRecipientController::class, 'destroy'])->name('payout-recipients.destroy');
     });
 
     Route::prefix('admin')->name('admin.')->group(function () {

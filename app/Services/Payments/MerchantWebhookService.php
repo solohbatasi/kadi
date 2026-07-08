@@ -5,6 +5,7 @@ namespace App\Services\Payments;
 use App\Jobs\DeliverMerchantWebhook;
 use App\Models\Merchant;
 use App\Models\MerchantWebhookDelivery;
+use App\Models\Payout;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -18,6 +19,11 @@ class MerchantWebhookService
         'transaction.failed',
         'transaction.cancelled',
         'transaction.timeout',
+        'payout.pending',
+        'payout.processing',
+        'payout.success',
+        'payout.failed',
+        'payout.reversed',
     ];
 
     public function dispatchTransactionEvent(Transaction $transaction, ?string $event = null): ?MerchantWebhookDelivery
@@ -55,6 +61,18 @@ class MerchantWebhookService
                 ],
             ],
         ]);
+    }
+
+    public function dispatchPayoutEvent(Payout $payout, ?string $event = null): ?MerchantWebhookDelivery
+    {
+        $payout->loadMissing('merchant.webhookEndpoint', 'recipient');
+        $event ??= $this->eventForPayoutStatus($payout->status);
+
+        if (! $event) {
+            return null;
+        }
+
+        return $this->queueDelivery($payout->merchant, $event, $this->payloadForPayout($payout, $event));
     }
 
     public function deliver(MerchantWebhookDelivery $delivery): bool
@@ -135,6 +153,18 @@ class MerchantWebhookService
         };
     }
 
+    public function eventForPayoutStatus(string $status): ?string
+    {
+        return match ($status) {
+            'pending' => 'payout.pending',
+            'processing' => 'payout.processing',
+            'success' => 'payout.success',
+            'failed' => 'payout.failed',
+            'reversed' => 'payout.reversed',
+            default => null,
+        };
+    }
+
     protected function queueDelivery(
         Merchant $merchant,
         string $event,
@@ -176,6 +206,23 @@ class MerchantWebhookService
                 'mpesa_receipt' => $transaction->status === 'success' ? $transaction->mpesa_receipt_number : null,
                 'reference' => $transaction->reference,
                 'metadata' => $transaction->metadata ?? [],
+            ],
+        ];
+    }
+
+    protected function payloadForPayout(Payout $payout, string $event): array
+    {
+        return [
+            'event' => $event,
+            'payout' => [
+                'id' => $payout->public_id,
+                'amount' => $payout->amount,
+                'currency' => $payout->currency,
+                'status' => $payout->status,
+                'phone' => $this->maskPhone($payout->phone),
+                'recipient_id' => $payout->recipient?->public_id,
+                'failure_reason' => $payout->failure_reason,
+                'timestamp' => now()->toIso8601String(),
             ],
         ];
     }

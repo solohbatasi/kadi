@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Models\Merchant;
+use App\Models\Invoice;
 use App\Models\MpesaCallback;
 use App\Models\PaymentLink;
 use App\Models\Transaction;
@@ -132,6 +133,8 @@ class TransactionService
                     'paid_at' => now(),
                 ]);
 
+                $this->markLinkedInvoicePaid($transaction->fresh());
+
                 return [$transaction->fresh(), true];
             }
 
@@ -177,6 +180,8 @@ class TransactionService
             return $existing;
         }
 
+        $linkMetadata = $paymentLink->metadata ?? [];
+
         return Transaction::create([
             'merchant_id' => $paymentLink->merchant_id,
             'public_id' => 'txn_'.bin2hex(random_bytes(16)),
@@ -193,13 +198,32 @@ class TransactionService
             'reference' => $paymentLink->public_id,
             'description' => $paymentLink->title,
             'idempotency_key' => $idempotencyKey,
-            'metadata' => [
+            'metadata' => array_filter([
                 'initiated_by' => 'payment_link',
                 'payment_link_public_id' => $paymentLink->public_id,
                 'payment_link_slug' => $paymentLink->slug,
                 'payment_link_title' => $paymentLink->title,
-            ],
+                'invoice_public_id' => $linkMetadata['invoice_public_id'] ?? null,
+                'invoice_number' => $linkMetadata['invoice_number'] ?? null,
+            ], fn ($value) => $value !== null),
         ]);
+    }
+
+    protected function markLinkedInvoicePaid(Transaction $transaction): void
+    {
+        $invoicePublicId = $transaction->metadata['invoice_public_id'] ?? null;
+
+        if (! $invoicePublicId) {
+            return;
+        }
+
+        $invoice = Invoice::where('merchant_id', $transaction->merchant_id)
+            ->where('public_id', $invoicePublicId)
+            ->first();
+
+        if ($invoice && $invoice->status !== 'paid') {
+            app(InvoiceService::class)->markPaid($invoice);
+        }
     }
 
     protected function statusForMpesaResultCode(string $resultCode): string

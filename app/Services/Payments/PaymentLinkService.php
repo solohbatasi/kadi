@@ -25,6 +25,7 @@ class PaymentLinkService
             'allow_custom_amount' => $data['allow_custom_amount'] ?? false,
             'success_redirect_url' => $data['success_redirect_url'] ?? null,
             'status' => $data['status'] ?? 'active',
+            'metadata' => $data['metadata'] ?? null,
         ]);
     }
 
@@ -38,6 +39,7 @@ class PaymentLinkService
             'allow_custom_amount',
             'success_redirect_url',
             'status',
+            'metadata',
         ]), $data));
         $this->validateAmountRules($data);
 
@@ -49,6 +51,7 @@ class PaymentLinkService
             'allow_custom_amount' => $data['allow_custom_amount'] ?? false,
             'success_redirect_url' => $data['success_redirect_url'] ?? null,
             'status' => $data['status'] ?? $paymentLink->status,
+            'metadata' => $data['metadata'] ?? $paymentLink->metadata,
         ]);
 
         if (! empty($data['slug']) && $data['slug'] !== $paymentLink->slug) {

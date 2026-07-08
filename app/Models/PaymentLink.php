@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class PaymentLink extends Model
 {
@@ -22,15 +23,22 @@ class PaymentLink extends Model
         'allow_custom_amount',
         'success_redirect_url',
         'status',
+        'metadata',
     ];
 
     protected $casts = [
         'allow_custom_amount' => 'boolean',
+        'metadata' => 'array',
     ];
 
     public function merchant(): BelongsTo
     {
         return $this->belongsTo(Merchant::class);
+    }
+
+    public function invoice(): HasOne
+    {
+        return $this->hasOne(Invoice::class);
     }
 
     public function transactions(): HasMany

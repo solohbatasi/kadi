@@ -61,6 +61,21 @@ class Merchant extends Model
         return $this->hasMany(PaymentLink::class);
     }
 
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    public function payoutRecipients(): HasMany
+    {
+        return $this->hasMany(PayoutRecipient::class);
+    }
+
+    public function payouts(): HasMany
+    {
+        return $this->hasMany(Payout::class);
+    }
+
     public function webhookEndpoint(): HasOne
     {
         return $this->hasOne(MerchantWebhookEndpoint::class);

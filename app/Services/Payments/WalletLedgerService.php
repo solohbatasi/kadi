@@ -9,23 +9,23 @@ use Illuminate\Support\Facades\DB;
 
 class WalletLedgerService
 {
-    public function credit(Wallet $wallet, int $amount, string $description, ?Transaction $transaction = null, array $metadata = []): WalletLedgerEntry
+    public function credit(Wallet $wallet, int $amount, string $description, ?Transaction $transaction = null, array $metadata = [], ?string $entryType = null): WalletLedgerEntry
     {
-        return $this->adjustBalance($wallet, 'credit', $amount, $description, $transaction, $metadata);
+        return $this->adjustBalance($wallet, 'credit', $amount, $description, $transaction, $metadata, $entryType);
     }
 
-    public function debit(Wallet $wallet, int $amount, string $description, ?Transaction $transaction = null, array $metadata = []): WalletLedgerEntry
+    public function debit(Wallet $wallet, int $amount, string $description, ?Transaction $transaction = null, array $metadata = [], ?string $entryType = null): WalletLedgerEntry
     {
-        return $this->adjustBalance($wallet, 'debit', $amount, $description, $transaction, $metadata);
+        return $this->adjustBalance($wallet, 'debit', $amount, $description, $transaction, $metadata, $entryType);
     }
 
-    protected function adjustBalance(Wallet $wallet, string $direction, int $amount, string $description, ?Transaction $transaction, array $metadata): WalletLedgerEntry
+    protected function adjustBalance(Wallet $wallet, string $direction, int $amount, string $description, ?Transaction $transaction, array $metadata, ?string $entryType): WalletLedgerEntry
     {
         if ($amount <= 0) {
             throw new \InvalidArgumentException('Amount must be greater than zero.');
         }
 
-        return DB::transaction(function () use ($wallet, $direction, $amount, $description, $transaction, $metadata) {
+        return DB::transaction(function () use ($wallet, $direction, $amount, $description, $transaction, $metadata, $entryType) {
             $wallet = Wallet::where('id', $wallet->id)->lockForUpdate()->firstOrFail();
 
             if ($direction === 'debit' && $wallet->available_balance < $amount) {
@@ -44,9 +44,9 @@ class WalletLedgerService
                 'merchant_id' => $wallet->merchant_id,
                 'transaction_id' => $transaction?->id,
                 'public_id' => 'wle_'.bin2hex(random_bytes(16)),
-                'entry_type' => $transaction
+                'entry_type' => $entryType ?? ($transaction
                     ? ($direction === 'credit' ? 'payment_credit' : 'commission_debit')
-                    : 'manual_adjustment',
+                    : 'manual_adjustment'),
                 'direction' => $direction,
                 'amount' => $amount,
                 'balance_after' => $adjustedBalance,
