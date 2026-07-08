@@ -5,11 +5,26 @@ namespace Tests\Feature;
 use App\Models\ApiKey;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class AuthenticateApiKeyTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Route::middleware('auth.apikey')->get('/_tests/api-key-auth', function (Request $request) {
+            return response()->json([
+                'merchant_id' => $request->attributes->get('merchant')->id,
+                'api_key_id' => $request->attributes->get('apiKey')->id,
+                'environment' => $request->attributes->get('apiEnvironment'),
+            ]);
+        });
+    }
 
     private function createActiveApiKey(User $user): ApiKey
     {
@@ -34,7 +49,7 @@ class AuthenticateApiKeyTest extends TestCase
         $user = User::factory()->withPersonalTeam()->create();
         $apiKey = $this->createActiveApiKey($user);
 
-        $response = $this->getJson('/api/test-api-key', ['x-api-key' => session('api_key_secret')]);
+        $response = $this->getJson('/_tests/api-key-auth', ['x-api-key' => session('api_key_secret')]);
 
         $response->assertStatus(200);
     }
@@ -44,7 +59,7 @@ class AuthenticateApiKeyTest extends TestCase
         $user = User::factory()->withPersonalTeam()->create();
         $apiKey = $this->createActiveApiKey($user);
 
-        $response = $this->getJson('/api/test-api-key', ['Authorization' => 'Bearer '.session('api_key_secret')]);
+        $response = $this->getJson('/_tests/api-key-auth', ['Authorization' => 'Bearer '.session('api_key_secret')]);
 
         $response->assertStatus(200);
     }
@@ -54,7 +69,7 @@ class AuthenticateApiKeyTest extends TestCase
         $user = User::factory()->withPersonalTeam()->create();
         $apiKey = $this->createActiveApiKey($user);
 
-        $response = $this->getJson('/api/test-api-key', ['Authorization' => 'ApiKey '.session('api_key_secret')]);
+        $response = $this->getJson('/_tests/api-key-auth', ['Authorization' => 'ApiKey '.session('api_key_secret')]);
 
         $response->assertStatus(200);
     }
@@ -64,7 +79,7 @@ class AuthenticateApiKeyTest extends TestCase
         $user = User::factory()->withPersonalTeam()->create();
         $merchant = $user->merchant ?? $user->merchant()->create(['public_id' => 'mer_test', 'status' => 'active', 'compliance_status' => 'incomplete', 'live_enabled' => true]);
 
-        $response = $this->getJson('/api/test-api-key', ['x-api-key' => 'pay_pk_invalid']);
+        $response = $this->getJson('/_tests/api-key-auth', ['x-api-key' => 'pay_pk_invalid']);
 
         $response->assertStatus(401);
     }
@@ -76,7 +91,7 @@ class AuthenticateApiKeyTest extends TestCase
 
         $this->actingAs($user)->post("/developer/api-keys/{$apiKey->id}/revoke");
 
-        $response = $this->getJson('/api/test-api-key', ['x-api-key' => session('api_key_secret')]);
+        $response = $this->getJson('/_tests/api-key-auth', ['x-api-key' => session('api_key_secret')]);
 
         $response->assertStatus(401);
     }
@@ -85,7 +100,7 @@ class AuthenticateApiKeyTest extends TestCase
     {
         $user = User::factory()->withPersonalTeam()->create();
 
-        $response = $this->getJson('/api/test-api-key', ['x-api-key' => 'pay_sk_invalid']);
+        $response = $this->getJson('/_tests/api-key-auth', ['x-api-key' => 'pay_sk_invalid']);
 
         $response->assertStatus(401);
     }
@@ -102,7 +117,7 @@ class AuthenticateApiKeyTest extends TestCase
         $secret = session('api_key_secret');
         $merchant->update(['status' => 'suspended']);
 
-        $response = $this->getJson('/api/test-api-key', ['x-api-key' => $secret]);
+        $response = $this->getJson('/_tests/api-key-auth', ['x-api-key' => $secret]);
 
         $response->assertStatus(403);
     }

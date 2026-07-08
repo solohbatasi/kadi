@@ -14,7 +14,16 @@ class StkPushApiTest extends TestCase
 
     public function test_initiates_stk_push_and_returns_checkout_ids(): void
     {
+        config([
+            'mpesa.consumer_key' => 'consumer-key',
+            'mpesa.consumer_secret' => 'consumer-secret',
+            'mpesa.shortcode' => '174379',
+            'mpesa.passkey' => 'passkey',
+            'mpesa.callback_url' => 'https://paygate.test/api/mpesa/stk-callback/secret',
+        ]);
+
         Http::fake([
+            'sandbox.safaricom.co.ke/oauth/*' => Http::response(['access_token' => 'daraja-token'], 200),
             'sandbox.safaricom.co.ke/*' => Http::response([
                 'MerchantRequestID' => '12345',
                 'CheckoutRequestID' => 'ws_CO_678',
@@ -40,7 +49,7 @@ class StkPushApiTest extends TestCase
         $response = $this->withHeaders([
             'x-api-key' => 'pay_sk_test',
             'Idempotency-Key' => 'idem-key-123',
-        ])->postJson('/api/v1/stk-push', [
+        ])->postJson('/api/v1/transactions/push-stk', [
             'phone' => '0712345678',
             'amount' => 100,
             'reference' => 'ORDER-100',

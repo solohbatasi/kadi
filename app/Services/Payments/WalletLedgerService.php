@@ -44,7 +44,9 @@ class WalletLedgerService
                 'merchant_id' => $wallet->merchant_id,
                 'transaction_id' => $transaction?->id,
                 'public_id' => 'wle_'.bin2hex(random_bytes(16)),
-                'entry_type' => $transaction ? 'transaction' : 'adjustment',
+                'entry_type' => $transaction
+                    ? ($direction === 'credit' ? 'payment_credit' : 'commission_debit')
+                    : 'manual_adjustment',
                 'direction' => $direction,
                 'amount' => $amount,
                 'balance_after' => $adjustedBalance,

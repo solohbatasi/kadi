@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\SystemHealthController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Developer\ApiKeyController;
 use App\Http\Controllers\Developer\DeveloperDashboardController;
+use App\Http\Controllers\Developer\WebhookEndpointController;
 use App\Http\Controllers\Developer\WalletController;
 
 Route::get('/', function () {
@@ -37,6 +38,9 @@ Route::middleware([
         Route::post('api-keys/{apiKey}/rotate', [ApiKeyController::class, 'rotate'])->name('api-keys.rotate');
         Route::delete('api-keys/{apiKey}', [ApiKeyController::class, 'destroy'])->name('api-keys.destroy');
         Route::get('wallet', [WalletController::class, 'show'])->name('wallet.overview');
+        Route::get('webhooks', [WebhookEndpointController::class, 'show'])->name('webhooks.show');
+        Route::put('webhooks', [WebhookEndpointController::class, 'update'])->name('webhooks.update');
+        Route::post('webhooks/test', [WebhookEndpointController::class, 'test'])->name('webhooks.test');
     });
 
     Route::prefix('admin')->name('admin.')->group(function () {

@@ -13,18 +13,20 @@ class StkCallbackTest extends TestCase
 
     public function test_callback_with_invalid_secret_returns_401(): void
     {
-        $response = $this->postJson('/api/mpesa/callback', [
+        config(['mpesa.callback_secret' => 'secret']);
+
+        $response = $this->postJson('/api/mpesa/stk-callback/wrong', [
             'Body' => [],
-        ], ['x-callback-secret' => 'wrong']);
+        ]);
 
         $response->assertStatus(401);
     }
 
     public function test_callback_with_unknown_checkout_request_id_is_stored_and_returns_200(): void
     {
-        $response = $this->withHeaders([
-            'x-callback-secret' => config('mpesa.callback_secret', 'secret'),
-        ])->postJson('/api/mpesa/callback', [
+        config(['mpesa.callback_secret' => 'secret']);
+
+        $response = $this->postJson('/api/mpesa/stk-callback/secret', [
             'Body' => [
                 'stkCallback' => [
                     'CheckoutRequestID' => 'unknown',
@@ -42,6 +44,8 @@ class StkCallbackTest extends TestCase
 
     public function test_callback_credits_wallet_only_once_for_successful_payment(): void
     {
+        config(['mpesa.callback_secret' => 'secret']);
+
         $user = User::factory()->withPersonalTeam()->create();
         $merchant = $user->merchant ?? $user->merchant()->create(['public_id' => 'mer_test', 'status' => 'active', 'compliance_status' => 'incomplete', 'live_enabled' => true]);
         $merchant->wallet()->create(['public_id' => 'wal_test', 'available_balance' => 0, 'pending_balance' => 0, 'currency' => 'KES']);
@@ -65,7 +69,6 @@ class StkCallbackTest extends TestCase
             'mpesa_checkout_request_id' => 'ws_CO_678',
         ]);
 
-        $headers = ['x-callback-secret' => config('mpesa.callback_secret', 'secret')];
         $payload = [
             'Body' => [
                 'stkCallback' => [
@@ -79,8 +82,8 @@ class StkCallbackTest extends TestCase
             ],
         ];
 
-        $this->withHeaders($headers)->postJson('/api/mpesa/callback', $payload)->assertStatus(200);
-        $this->withHeaders($headers)->postJson('/api/mpesa/callback', $payload)->assertStatus(200);
+        $this->postJson('/api/mpesa/stk-callback/secret', $payload)->assertStatus(200);
+        $this->postJson('/api/mpesa/stk-callback/secret', $payload)->assertStatus(200);
 
         $merchant->refresh();
         $this->assertSame(98, $merchant->wallet->fresh()->available_balance);

@@ -65,13 +65,14 @@ class TransactionService
         $customerMessage = $payload['customer_message'] ?? null;
         $callbackMetadata = $payload['callback_metadata'] ?? [];
 
-        return DB::transaction(function () use (
+        [$transaction, $shouldDispatchWebhook] = DB::transaction(function () use (
             $checkoutRequestId,
             $merchantRequestId,
             $resultCode,
             $resultDescription,
             $customerMessage,
-            $callbackMetadata
+            $callbackMetadata,
+            $payload
         ) {
             $transaction = null;
 
@@ -92,19 +93,19 @@ class TransactionService
 
             if (! $transaction) {
                 MpesaCallback::create($callbackData);
-                return null;
+                return [null, false];
             }
 
             $transaction->callbacks()->create($callbackData);
 
-            if ($transaction->status === 'success') {
+            if ($transaction->status !== 'pending') {
                 $transaction->update([
                     'mpesa_result_code' => $resultCode,
                     'mpesa_result_description' => $resultDescription,
                     'customer_message' => $customerMessage,
                 ]);
 
-                return $transaction;
+                return [$transaction, false];
             }
 
             if ((string) $resultCode === '0') {
@@ -125,22 +126,40 @@ class TransactionService
                     'mpesa_result_code' => $resultCode,
                     'mpesa_result_description' => $resultDescription,
                     'customer_message' => $customerMessage,
+                    'mpesa_receipt_number' => $callbackMetadata['MpesaReceiptNumber'] ?? $transaction->mpesa_receipt_number,
                     'status' => 'success',
                     'paid_at' => now(),
                 ]);
 
-                return $transaction;
+                return [$transaction->fresh(), true];
             }
+
+            $status = $this->statusForMpesaResultCode((string) $resultCode);
 
             $transaction->update([
                 'mpesa_result_code' => $resultCode,
                 'mpesa_result_description' => $resultDescription,
                 'customer_message' => $customerMessage,
-                'status' => 'failed',
+                'status' => $status,
                 'failed_at' => now(),
             ]);
 
-            return $transaction;
+            return [$transaction->fresh(), true];
         });
+
+        if ($transaction && $shouldDispatchWebhook) {
+            app(MerchantWebhookService::class)->dispatchTransactionEvent($transaction);
+        }
+
+        return $transaction;
+    }
+
+    protected function statusForMpesaResultCode(string $resultCode): string
+    {
+        return match ($resultCode) {
+            '1032' => 'cancelled',
+            '1037' => 'timeout',
+            default => 'failed',
+        };
     }
 }

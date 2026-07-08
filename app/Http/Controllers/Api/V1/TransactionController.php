@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\StkPushRequest;
 use App\Services\Mpesa\StkPushService;
 use App\Services\Payments\CommissionService;
+use App\Services\Payments\MerchantWebhookService;
 use App\Services\Payments\TransactionService;
 use App\Support\PhoneNumber;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +16,8 @@ class TransactionController extends Controller
     public function __construct(
         protected TransactionService $transactionService,
         protected CommissionService $commissionService,
-        protected StkPushService $stkPushService
+        protected StkPushService $stkPushService,
+        protected MerchantWebhookService $webhooks
     ) {
     }
 
@@ -64,6 +66,8 @@ class TransactionController extends Controller
                 'stk_push_response' => $responsePayload,
             ]),
         ]);
+
+        $this->webhooks->dispatchTransactionEvent($transaction->fresh(), 'transaction.pending');
 
         return response()->json([
             'transaction_id' => $transaction->public_id,
