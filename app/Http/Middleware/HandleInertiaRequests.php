@@ -41,6 +41,7 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'csrf_token' => csrf_token(),
+            'api_key_secret' => fn () => $request->session()->get('api_key_secret'),
             'auth' => [
                 'user' => $user ? [
                     'id' => $user->id,

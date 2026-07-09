@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\ApiKey;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class ApiKeyManagementTest extends TestCase
@@ -65,6 +66,30 @@ class ApiKeyManagementTest extends TestCase
         $this->assertNotNull($apiKey->secret_key_hash);
         $this->assertStringStartsWith('pay_pk_', $apiKey->publishable_key);
         $this->assertDatabaseHas('api_keys', ['id' => $apiKey->id]);
+    }
+
+    public function test_created_secret_is_shared_with_api_keys_page_for_copying(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+        $user->merchant()->create(['public_id' => 'mer_test', 'status' => 'active', 'compliance_status' => 'incomplete', 'live_enabled' => true]);
+
+        $this->actingAs($user)
+            ->post('/developer/api-keys', [
+                'name' => 'Copyable Key',
+                'environment' => 'sandbox',
+            ])
+            ->assertSessionHas('api_key_secret');
+
+        $secret = session('api_key_secret');
+
+        $this->actingAs($user)
+            ->withSession(['api_key_secret' => $secret])
+            ->get('/developer/api-keys')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Developer/ApiKeys/Index')
+                ->where('api_key_secret', $secret)
+            );
     }
 
     public function test_revoke_makes_key_unusable(): void
