@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: .
+      target: app
+    image: kadi-payment-gateway:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      SERVER_PORT: ${SERVER_PORT:-8000}
+    ports:
+      - "${APP_PORT:-8000}:${SERVER_PORT:-8000}"
+    volumes:
+      - kadi-storage:/app/storage
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:${SERVER_PORT:-8000}/ >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  queue:
+    image: kadi-payment-gateway:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    command: ["queue"]
+    depends_on:
+      app:
+        condition: service_started
+    volumes:
+      - kadi-storage:/app/storage
+
+  scheduler:
+    image: kadi-payment-gateway:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    command: ["scheduler"]
+    depends_on:
+      app:
+        condition: service_started
+    volumes:
+      - kadi-storage:/app/storage
+
+volumes:
+  kadi-storage:

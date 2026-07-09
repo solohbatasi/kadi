@@ -89,4 +89,5 @@ php artisan test
 - Back up the database before migrations.
 - Roll back code first, then only roll back migrations if the migration is known to be reversible and no production data would be lost.
 - Do not manually edit wallet balances or ledger rows during rollback.
+For containerized deployment without Nginx, see [DOCKER.md](DOCKER.md). The Docker setup uses FrankenPHP, assumes PostgreSQL already exists, and runs separate app, queue, and scheduler services from one image.
 
